@@ -25,22 +25,6 @@ blacklist = ["reply", "replies", 0-9, "show more replies", "today", "Today", "ye
 #fetch 3000 posts of all time from https://www.reddit.com/r/rareinsults/top/?sort=top&t=all . Look for alt="Post image" and get the src attribute. Download the image and save it to the images folder. Then run the image through the OCR, filtering for the last sentence, and if a line contains anything from the blacklist, using the line above it, and save the text to the [insults] list.
 
 class bot():
-    
-    @property
-    def run_type(self):
-        return self._run_type
-    
-    @runtype.set
-    def runType(self, value):
-        if value is RunType.DEBUG:
-            print("Debug mode enabled")
-            self.recordsubmissions = False
-            self.checksubmissions = False
-        if value is RunType.NORMAL:
-            print("Normal mode enabled")
-            self.recordsubmissions = True
-            self.checksubmissions = True
-        self._runType = value
         
     def __init__(self, **kwargs):
         self.BOT_DIR = os.path.dirname(os.path.realpath(__file__))+"/"
