@@ -84,6 +84,23 @@ class bot():
         else:
             return False
         
+    #measure the average time it takes to get an image from reddit using 5 images and return the average to avgdltime
+    avgdltime = 0    
+    def nettest(self, submission):
+           start = time.clock()
+           img = Image.open(self.images_dir+"/"+submission.id+".jpg")
+           remote_img = submission.url if submission.url.endswith(".jpg") else submission.url+".jpg"
+           r = requests.get(remote_img, stream=True)
+           for i in range(5):
+            if r.status_code == 200:
+                r.raw.decode_content = True
+                with open(self.images_dir+"/"+submission.id+".jpg", 'wb') as f:
+                    shutil.copyfileobj(r.raw, f)
+           end = time.clock()
+           if i <= 5:
+               self.avgdltime = (end-start)/5
+               return True 
+                   
     def filter_submissions(self):
         global submission
         if ("imgur.com" in submission.url) or ("i.redd.it" in submission.url):
@@ -95,23 +112,47 @@ class bot():
         if (".jpg" in submission.url) or (".png" in submission.url):
             return True
         
+        #filter files smaller than 80kb
+        if (submission.url.endswith(".jpg") or submission.url.endswith(".png")) and (submission.url.startswith("http://") or submission.url.startswith("https://")):
+            
+        
         #check for duplicates
-        if self.checksubmissions:
-            for submission in self.subreddit.new(limit=1000):
-                if submission.url == submission.url:
-                    return False
+            if self.checksubmissions:
+                for submission in self.subreddit.new(limit=1000):
+                    if submission.url == submission.url:
+                        return False
         return True
 
         
     def get_insult(self, submission):
         global img
-        if ".jpg" in submission.url:
-            time.sleep(2.5) #wait for the image to download            
-            img = Image.open(self.images_dir+"/"+submission.id+".jpg")
+        if ".jpg" in submission.url and self.avgdltime != 0:
+            time.sleep(self.avgdltime)#wait for the image to download            
+            if not os.path.isfile(self.images_dir+"/"+submission.id+".jpg"):
+                time.sleep(5)
+                neterr = input("There seems to be an issue with your network connection. Press r to retry, s to skip and q to exit.")
+                if neterr == "r":
+                    self.get_image(submission)
+                elif neterr == "s":
+                    return False
+                elif neterr == "q":
+                    exit()
+            else:
+                img = Image.open(self.images_dir+"/"+submission.id+".jpg")
                 
-        elif ".png" in submission.url:
-            time.sleep(2.5)
-            img = Image.open(self.images_dir+"/"+submission.id+".png")
+        elif ".png" in submission.url and self.avgdltime != 0:
+            time.sleep(self.avgdltime)
+            if not os.path.isfile(self.images_dir+"/"+submission.id+".png"):
+                time.sleep(5)
+                neterr = input("There seems to be an issue with your network connection. Press r to retry, s to skip and q to exit.")
+                if neterr == "r":
+                    self.get_image(submission)
+                elif neterr == "s":
+                    return False
+                elif neterr == "q":
+                    exit()
+            else:
+                img = Image.open(self.images_dir+"/"+submission.id+".png")
         else:
             return False
         
@@ -157,4 +198,6 @@ for submission in submissions:
     if insults != False:
         for insult in insults:
          bot.write_insult(submission, insult)
+         #clean up the images directory
+         os.remove(bot.images_dir+"/"+submission.id+".jpg")
             
