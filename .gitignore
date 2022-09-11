@@ -131,3 +131,5 @@ validation.txt
 pw.env
 ocrbot/*
 ocrbot
+env.zsh
+*.jpg

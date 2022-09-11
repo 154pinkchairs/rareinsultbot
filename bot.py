@@ -22,7 +22,6 @@ keyphrase = '/u/rareinsultbot'
 
 insults = []
 blacklist = ["reply", "replies", 0-9, "show more replies", "today", "Today", "yesterday", "PM", "ago", ":", "Reply"]
-#fetch 3000 posts of all time from https://www.reddit.com/r/rareinsults/top/?sort=top&t=all . Look for alt="Post image" and get the src attribute. Download the image and save it to the images folder. Then run the image through the OCR, filtering for the last sentence, and if a line contains anything from the blacklist, using the line above it, and save the text to the [insults] list.
 
 class bot():
         
@@ -39,30 +38,14 @@ class bot():
         self.reddit = praw.Reddit(client_id=os.environ['client_id'],
                      client_secret=os.environ['client_secret'],
                      username=os.environ['username'],
-                     password=os.environ['password'])
+                     password=os.environ['password'],
+                     user_agent=os.environ['user_agent']
+                     )
         self.subreddit = self.reddit.subreddit('rareinsults')
         
-        self.runtype = RunType.NORMAL
         
         print("Bot initialized")
-        
-    def filter_submissions(self):
-        if ("imgur.com" in submission.url) or ("i.redd.it" in submission.url):
-            return True
-        
-        if ("/a" in submission.url):
-            return False
-        
-        if (".jpg" in submission.url) or (".png" in submission.url):
-            return True
-        
-        #check for duplicates
-        if self.checksubmissions:
-            for submission in self.subreddit.new(limit=1000):
-                if submission.url == submission.url:
-                    return False
-        return True
-    
+            
     def get_image(self, submission):
         if "imgur.com" in submission.url:
             if "/a/" in submission.url:
@@ -110,6 +93,24 @@ class bot():
         else:
             return False
         
+    def filter_submissions(self):
+        if ("imgur.com" in submission.url) or ("i.redd.it" in submission.url):
+            return True
+        
+        if ("/a" in submission.url):
+            return False
+        
+        if (".jpg" in submission.url) or (".png" in submission.url):
+            return True
+        
+        #check for duplicates
+        if self.checksubmissions:
+            for submission in self.subreddit.new(limit=1000):
+                if submission.url == submission.url:
+                    return False
+        return True
+
+        
     def get_insult(self, submission):
         if ".jpg" in submission.url:
             img = Image.open(self.images_dir+"/"+submission.id+".jpg")
@@ -142,3 +143,17 @@ class bot():
     def write_insult(self, submission, insult):
         with open(self.BOT_DIR+"insults.txt", "a") as f:
             f.write(insult)
+            
+#execute the bot
+bot = bot()
+#run all functions
+#fetch 3000 posts of all time from https://www.reddit.com/r/rareinsults/top/?sort=top&t=all and write them to submissions variable
+submissions = bot.subreddit.top(limit=3000)
+
+for submission in submissions:
+    bot.get_image(submission)
+    bot.filter_submissions()
+    insults = bot.get_insult(submission)
+    for insult in insults:
+        bot.write_insult(submission, insult)
+            
