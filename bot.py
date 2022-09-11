@@ -6,10 +6,6 @@ import shutil
 import time
 import requests
 import pytesseract as ocr
-import webbrowser
-import random
-import re
-import datetime
 import os
 
 class RunType(Enum):
@@ -189,9 +185,7 @@ for submission in submissions:
     bot.get_image(submission)
     bot.filter_submissions()
     insults = bot.get_insult(submission)
-    if insults == False:
-        continue
-    else:
+    if insults != False:
         for insult in insults:
          bot.write_insult(submission, insult)
             
