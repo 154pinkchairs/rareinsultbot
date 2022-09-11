@@ -1,23 +1,18 @@
 import praw
 from PIL import Image, ImageEnhance, ImageFilter
-from prawcore import PrawcoreException
-from enum import Enum
 import shutil
-import time
 import requests
 import pytesseract as ocr
 import os
+import time
 
-class RunType(Enum):
-    NORMAL = 1
-    DEBUG = 2
 
 #reddit api login, loaded from .env file
 
 keyphrase = '/u/rareinsultbot'
 
 insults = []
-blacklist = ["reply", "replies", 0-9, "show more replies", "today", "Today", "yesterday", "PM", "ago", ":", "Reply", "{", "}"]
+blacklist = ["reply", "replies", 0-9, "show more replies", "today", "Today", "yesterday", "PM", "ago", ":", "Reply", "{", "}", "↓", "↑"]
 
 class bot():
         
@@ -111,38 +106,12 @@ class bot():
     def get_insult(self, submission):
         global img
         if ".jpg" in submission.url:
-            time.sleep(2.5) #wait for the image to download
-            while not os.path.isfile(self.images_dir+"/"+submission.id+".jpg"):
-                time.sleep(10)
-                if not os.path.isfile(self.images_dir+"/"+submission.id+".jpg"):
-                    choice = input("There seems to be an issue with your Internet connection. r to retry, s to skip, q to quit")
-                    if choice == "r":
-                        continue
-                    if choice == "s":
-                        return False
-                    if choice == "q":
-                        exit()
-                    else:
-                        print("Invalid input, please try again")
-                        continue                    
-                img = Image.open(self.images_dir+"/"+submission.id+".jpg")
+            time.sleep(2.5) #wait for the image to download            
+            img = Image.open(self.images_dir+"/"+submission.id+".jpg")
                 
         elif ".png" in submission.url:
             time.sleep(2.5)
-            while not os.path.isfile(self.images_dir+"/"+submission.id+".png"):
-                time.sleep(10)
-                if not os.path.isfile(self.images_dir+"/"+submission.id+".png"):
-                    choice = input("There seems to be an issue with your Internet connection. r to retry, s to skip, q to quit")
-                    if choice == "r":
-                        continue
-                    if choice == "s":
-                        return False
-                    if choice == "q":
-                        exit()
-                    else:
-                        print("Invalid input, please try again")
-                        continue
-                img = Image.open(self.images_dir+"/"+submission.id+".png")
+            img = Image.open(self.images_dir+"/"+submission.id+".png")
         else:
             return False
         
