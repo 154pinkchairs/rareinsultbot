@@ -94,6 +94,7 @@ class bot():
             return False
         
     def filter_submissions(self):
+        global submission
         if ("imgur.com" in submission.url) or ("i.redd.it" in submission.url):
             return True
         

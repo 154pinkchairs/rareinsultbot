@@ -133,3 +133,4 @@ ocrbot/*
 ocrbot
 env.zsh
 *.jpg
+tesseract_*
