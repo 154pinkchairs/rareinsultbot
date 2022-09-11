@@ -14,6 +14,9 @@ keyphrase = '/u/rareinsultbot'
 insults = []
 blacklist = ["reply", "replies", 0-9, "show more replies", "today", "Today", "yesterday", "PM", "ago", ":", "Reply", "{", "}", "↓", "↑"]
 
+if not os.path.exists('./tmp/images'):
+    os.makedirs('./tmp/images')
+
 class bot():
         
     def __init__(self, **kwargs):
