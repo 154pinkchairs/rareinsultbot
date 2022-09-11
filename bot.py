@@ -21,7 +21,7 @@ class RunType(Enum):
 keyphrase = '/u/rareinsultbot'
 
 insults = []
-blacklist = ["reply", "replies", 0-9, "show more replies", "today", "Today", "yesterday", "PM", "ago", ":", "Reply"]
+blacklist = ["reply", "replies", 0-9, "show more replies", "today", "Today", "yesterday", "PM", "ago", ":", "Reply", "{", "}"]
 
 class bot():
         
@@ -113,12 +113,43 @@ class bot():
 
         
     def get_insult(self, submission):
+        global img
         if ".jpg" in submission.url:
-            img = Image.open(self.images_dir+"/"+submission.id+".jpg")
+            time.sleep(2.5) #wait for the image to download
+            while not os.path.isfile(self.images_dir+"/"+submission.id+".jpg"):
+                time.sleep(10)
+                if not os.path.isfile(self.images_dir+"/"+submission.id+".jpg"):
+                    choice = input("There seems to be an issue with your Internet connection. r to retry, s to skip, q to quit")
+                    if choice == "r":
+                        continue
+                    if choice == "s":
+                        return False
+                    if choice == "q":
+                        exit()
+                    else:
+                        print("Invalid input, please try again")
+                        continue                    
+                img = Image.open(self.images_dir+"/"+submission.id+".jpg")
+                
         elif ".png" in submission.url:
-            img = Image.open(self.images_dir+"/"+submission.id+".png")
+            time.sleep(2.5)
+            while not os.path.isfile(self.images_dir+"/"+submission.id+".png"):
+                time.sleep(10)
+                if not os.path.isfile(self.images_dir+"/"+submission.id+".png"):
+                    choice = input("There seems to be an issue with your Internet connection. r to retry, s to skip, q to quit")
+                    if choice == "r":
+                        continue
+                    if choice == "s":
+                        return False
+                    if choice == "q":
+                        exit()
+                    else:
+                        print("Invalid input, please try again")
+                        continue
+                img = Image.open(self.images_dir+"/"+submission.id+".png")
         else:
             return False
+        
         img = img.filter(ImageFilter.MedianFilter())
         enhancer = ImageEnhance.Contrast(img)
         img = enhancer.enhance(2)
@@ -133,18 +164,21 @@ class bot():
                 #join the last line containing a dot with the lines above it until a line containing a dot is found. Then remove the text before the dot in the preceding line.
             if "." in line and line != text[-1]:
                 text[text.index(line)+1] = line + " " + text[text.index(line)+1]
-                #split the line with a dot into two lines, and remove tthe line with the dot
-                for line in text:
-                    if "." in line:
-                        text[text.index(line)] = line.split(".")[0]
-                        text.insert(text.index(line)+1, line.split(".")[1])
         insult = text[-1]
         return insult
-    
+        
     def write_insult(self, submission, insult):
-        with open(self.BOT_DIR+"insults.txt", "a") as f:
-            f.write(insult)
-            
+            #check the insults.txt file for duplicates and remove them (if the file exists)
+        if os.path.isfile(self.BOT_DIR+"insults.txt"):
+            with open(self.BOT_DIR+"insults.txt", "r") as f:
+                for line in f:
+                    if insult in line:
+                        return False
+                    elif insult not in line or os.path.isfile(self.BOT_DIR+"insults.txt") == False:
+                        with open(self.BOT_DIR+"insults.txt", "a") as f:
+                            f.write(insult+"\n")
+                            return True
+                        
 #execute the bot
 bot = bot()
 #run all functions
@@ -155,6 +189,9 @@ for submission in submissions:
     bot.get_image(submission)
     bot.filter_submissions()
     insults = bot.get_insult(submission)
-    for insult in insults:
-        bot.write_insult(submission, insult)
+    if insults == False:
+        continue
+    else:
+        for insult in insults:
+         bot.write_insult(submission, insult)
             
